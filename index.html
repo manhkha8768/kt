@@ -1,0 +1,43 @@
+# KHA-Toolkit - chay khong can USB.
+# Cach dung: mo PowerShell tren may can sua, go:   irm manhkha8768.github.io/kt | iex
+# App tai ve thu muc tam, hoi mat khau, mo app (xin quyen Admin), dong app thi tu xoa thu muc tam.
+& {
+    $ErrorActionPreference = 'Stop'
+    try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 } catch { }
+    if ($PSVersionTable.PSVersion.Major -lt 5 -or [Environment]::OSVersion.Version.Build -lt 9600) { Write-Host 'May nay can Windows 8.1/10/11 va PowerShell 5.1 - dung USB.' -ForegroundColor Red; return }
+    $goc = 'https://manhkha8768.github.io/kt'
+    $tam = Join-Path $env:TEMP ('KHA-Web_' + [guid]::NewGuid().ToString('N').Substring(0, 8))
+    try {
+        Write-Host 'KHA-Toolkit (ban web): dang tai...' -ForegroundColor Cyan
+        $wc = New-Object Net.WebClient; $wc.Headers['Cache-Control'] = 'no-cache'
+        $b = $wc.DownloadData("$goc/kha.bin?t=$([DateTime]::UtcNow.Ticks)")
+        if ($b.Length -lt 100 -or [Text.Encoding]::ASCII.GetString($b, 0, 4) -ne 'KHA1') { throw 'File tai ve khong dung (mang chan / trang loi).' }
+        $salt = [byte[]]$b[4..19]; $iv = [byte[]]$b[20..35]; $vong = [BitConverter]::ToInt32($b, 36); $than = $b.Length - 32
+        for ($lan = 1; $lan -le 3; $lan++) {
+            $ss = Read-Host 'Mat khau KHA-Toolkit' -AsSecureString
+            $con = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($ss)
+            try { $mk = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($con) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($con) }
+            Write-Host 'Dang kiem tra mat khau...'
+            $k = (New-Object Security.Cryptography.Rfc2898DeriveBytes($mk, $salt, $vong)).GetBytes(64)
+            $mac = [Security.Cryptography.HMACSHA256]::new([byte[]]$k[32..63]).ComputeHash($b, 0, $than)
+            if ([BitConverter]::ToString($mac) -eq [BitConverter]::ToString($b, $than, 32)) { break }
+            Write-Host 'Sai mat khau.' -ForegroundColor Red; $k = $null
+        }
+        if (-not $k) { return }
+        $aes = [Security.Cryptography.Aes]::Create(); $aes.Key = [byte[]]$k[0..31]; $aes.IV = $iv
+        $zip = $aes.CreateDecryptor().TransformFinalBlock($b, 40, $than - 40)
+        New-Item -ItemType Directory $tam -Force | Out-Null
+        $fz = Join-Path $tam 'kha.zip'; [IO.File]::WriteAllBytes($fz, $zip)
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $app = Join-Path $tam 'KHA-Toolkit'
+        [IO.Compression.ZipFile]::ExtractToDirectory($fz, $app); Remove-Item $fz -Force
+        Set-Content (Join-Path $app 'BAN-WEB.txt') 'Ban web: thu muc tam, tu xoa khi dong app. Phieu ban giao / du lieu khach can USB.'
+        $ts = '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + (Join-Path $app 'KHA-Toolkit.ps1') + '"'
+        $laAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+        Write-Host 'Dang mo KHA-Toolkit (bam Yes neu Windows hoi quyen Admin). Dong app thi cua so nay tu don dep.' -ForegroundColor Cyan
+        if ($laAdmin) { Start-Process powershell.exe -ArgumentList $ts -Wait } else { Start-Process powershell.exe -ArgumentList $ts -Verb RunAs -Wait }
+    } catch { Write-Host "LOI: $($_.Exception.Message)" -ForegroundColor Red }
+    finally {
+        if (Test-Path $tam) { Start-Sleep -Seconds 1; Remove-Item $tam -Recurse -Force -ErrorAction SilentlyContinue; Write-Host 'Da xoa thu muc tam cua KHA-Toolkit.' }
+    }
+}
