@@ -1,6 +1,39 @@
-# KHA-Toolkit - chay khong can USB.
-# Cach dung: mo PowerShell tren may can sua, go:   irm manhkha8768.github.io/kt | iex
-# App tai ve thu muc tam, hoi mat khau, mo app (xin quyen Admin), dong app thi tu xoa thu muc tam.
+<#
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KHA-Toolkit – chạy không cần USB</title>
+<style>
+body{font-size:0;margin:0;background:#f4f6f9;font-family:Segoe UI,Arial,sans-serif;color:#1f2937}
+.trang{font-size:16px;max-width:720px;margin:40px auto;background:#fff;border-radius:12px;padding:32px 36px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+h1{font-size:26px;margin:0 0 6px}
+.phu{color:#6b7280;margin:0 0 24px}
+ol{padding-left:22px;line-height:1.7}
+.lenh{display:flex;gap:10px;align-items:center;margin:10px 0 4px}
+code{flex:1;background:#111827;color:#a7f3d0;padding:12px 14px;border-radius:8px;font-size:17px;font-family:Consolas,monospace}
+button{background:#2563eb;color:#fff;border:0;border-radius:8px;padding:12px 16px;font-size:15px;cursor:pointer}
+button:hover{background:#1d4ed8}
+.ghichu{margin-top:24px;padding:14px 16px;background:#fff7ed;border-left:4px solid #f59e0b;border-radius:6px;font-size:14px;line-height:1.6}
+</style></head>
+<body><div class="trang">
+<h1>KHA-Toolkit</h1>
+<p class="phu">Chạy công cụ sửa máy ngay trên máy khách, không cần cắm USB.</p>
+<ol>
+<li>Trên máy cần sửa: bấm chuột phải nút <b>Start</b> → chọn <b>Terminal</b> (hoặc <b>Windows PowerShell</b>).</li>
+<li>Dán lệnh dưới đây vào rồi bấm <b>Enter</b>:
+<div class="lenh"><code id="lenh">irm manhkha8768.github.io/kt | iex</code><button onclick="chep()" id="nut">Sao chép</button></div></li>
+<li>Gõ <b>mật khẩu</b> rồi Enter (khi gõ màn hình không hiện chữ – bình thường).</li>
+<li>Windows hỏi quyền → bấm <b>Yes</b>. Dùng xong đóng app là tự dọn sạch trên máy khách.</li>
+</ol>
+<div class="ghichu">Trang này chỉ để xem hướng dẫn – mở bằng trình duyệt không chạy được app.<br>
+Phiếu bàn giao, chia sẻ máy in (Bước 1), cài phần mềm offline và máy chưa có mạng: dùng USB.</div>
+</div>
+<script>
+function chep(){var t=document.getElementById('lenh').textContent;var n=document.getElementById('nut');
+if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){n.textContent='Đã chép ✓';setTimeout(function(){n.textContent='Sao chép'},2000)})}
+else{var r=document.createRange();r.selectNodeContents(document.getElementById('lenh'));var s=window.getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('copy');n.textContent='Đã chép ✓'}}
+</script>
+<template>
+#>
 & {
     $ErrorActionPreference = 'Stop'
     try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 } catch { }
@@ -41,3 +74,6 @@
         if (Test-Path $tam) { Start-Sleep -Seconds 1; Remove-Item $tam -Recurse -Force -ErrorAction SilentlyContinue; Write-Host 'Da xoa thu muc tam cua KHA-Toolkit.' }
     }
 }
+<#
+</template></body></html>
+#>
