@@ -1,7 +1,7 @@
 <#
 <!DOCTYPE html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KHA-Toolkit – chạy không cần USB</title>
+<title>XLM-PCFix – chạy không cần USB</title>
 <style>
 body{font-size:0;margin:0;background:#f4f6f9;font-family:Segoe UI,Arial,sans-serif;color:#1f2937}
 .trang{font-size:16px;max-width:720px;margin:40px auto;background:#fff;border-radius:12px;padding:32px 36px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
@@ -15,7 +15,7 @@ button:hover{background:#1d4ed8}
 .ghichu{margin-top:24px;padding:14px 16px;background:#fff7ed;border-left:4px solid #f59e0b;border-radius:6px;font-size:14px;line-height:1.6}
 </style></head>
 <body><div class="trang">
-<h1>KHA-Toolkit</h1>
+<h1>XLM-PCFix</h1>
 <p class="phu">Chạy công cụ sửa máy ngay trên máy khách, không cần cắm USB.</p>
 <ol>
 <li>Trên máy cần sửa: bấm chuột phải nút <b>Start</b> → chọn <b>Terminal</b> (hoặc <b>Windows PowerShell</b>).</li>
@@ -41,13 +41,13 @@ else{var r=document.createRange();r.selectNodeContents(document.getElementById('
     $goc = 'https://manhkha8768.github.io/kt'
     $tam = Join-Path $env:TEMP ('KHA-Web_' + [guid]::NewGuid().ToString('N').Substring(0, 8))
     try {
-        Write-Host 'KHA-Toolkit (ban web): dang tai...' -ForegroundColor Cyan
+        Write-Host 'XLM-PCFix (ban web): dang tai...' -ForegroundColor Cyan
         $wc = New-Object Net.WebClient; $wc.Headers['Cache-Control'] = 'no-cache'
         $b = $wc.DownloadData("$goc/kha.bin?t=$([DateTime]::UtcNow.Ticks)")
         if ($b.Length -lt 100 -or [Text.Encoding]::ASCII.GetString($b, 0, 4) -ne 'KHA1') { throw 'File tai ve khong dung (mang chan / trang loi).' }
         $salt = [byte[]]$b[4..19]; $iv = [byte[]]$b[20..35]; $vong = [BitConverter]::ToInt32($b, 36); $than = $b.Length - 32
         for ($lan = 1; $lan -le 3; $lan++) {
-            $ss = Read-Host 'Mat khau KHA-Toolkit' -AsSecureString
+            $ss = Read-Host 'Mat khau XLM-PCFix' -AsSecureString
             $con = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($ss)
             try { $mk = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($con) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($con) }
             Write-Host 'Dang kiem tra mat khau...'
@@ -65,13 +65,14 @@ else{var r=document.createRange();r.selectNodeContents(document.getElementById('
         $app = Join-Path $tam 'KHA-Toolkit'
         [IO.Compression.ZipFile]::ExtractToDirectory($fz, $app); Remove-Item $fz -Force
         Set-Content (Join-Path $app 'BAN-WEB.txt') 'Ban web: thu muc tam, tu xoa khi dong app. Phieu ban giao / du lieu khach can USB.'
+        Set-Content (Join-Path $app 'NOI-BO.txt') 'Che do noi bo Cong ty: an nut Hoi Claude, doi chu khach thanh nguoi dung.'
         $ts = '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + (Join-Path $app 'KHA-Toolkit.ps1') + '"'
         $laAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-        Write-Host 'Dang mo KHA-Toolkit (bam Yes neu Windows hoi quyen Admin). Dong app thi cua so nay tu don dep.' -ForegroundColor Cyan
+        Write-Host 'Dang mo XLM-PCFix (bam Yes neu Windows hoi quyen Admin). Dong app thi cua so nay tu don dep.' -ForegroundColor Cyan
         if ($laAdmin) { Start-Process powershell.exe -ArgumentList $ts -Wait } else { Start-Process powershell.exe -ArgumentList $ts -Verb RunAs -Wait }
     } catch { Write-Host "LOI: $($_.Exception.Message)" -ForegroundColor Red }
     finally {
-        if (Test-Path $tam) { Start-Sleep -Seconds 1; Remove-Item $tam -Recurse -Force -ErrorAction SilentlyContinue; Write-Host 'Da xoa thu muc tam cua KHA-Toolkit.' }
+        if (Test-Path $tam) { Start-Sleep -Seconds 1; Remove-Item $tam -Recurse -Force -ErrorAction SilentlyContinue; Write-Host 'Da xoa thu muc tam cua XLM-PCFix.' }
     }
 }
 <#
